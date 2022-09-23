@@ -91,7 +91,8 @@ const updateReview = async (req, res) => {
     typeof reviewedBy === "number" ||
     typeof reviewedBy === "boolean"
   ) {
-    reviewData.reviewedBy = "Guest";
+    let reviewData
+   reviewData.reviewedBy = "Guest";
   } else {
     if (!valid.isValidName(reviewedBy)) {
       return res.status(404).send({ status: false, message: "huh" });

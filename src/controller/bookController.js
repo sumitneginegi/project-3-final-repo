@@ -9,7 +9,8 @@ const createbook = async function (req, res) {
   try {
     let data = req.body;
     let { title, excerpt, userId, ISBN, category, subcategory, releasedAt } = data;
-
+    // data.abd=abc
+    // data._doc.abc=abc
     //                                <<===emptyRequest===>>                                   //
     if (!valid.isValidRequestBody(data)) {
       return res.status(400).send({ status: false, msg: "plz provide data" });
@@ -100,9 +101,12 @@ const getById = async (req, res) => {
     let reviews = await reviewModel
       .find({ bookId: data })
       .select("reviewedBy reviewedAt rating review");
-    const result = allbooks._doc;
-    result.reviewsData = reviews;
-    res.status(200).send({ status: true, message: "success", data: result });
+    //const result = allbooks._doc;
+   // result.reviewsData = reviews;
+      allbooks._doc.reviewsData = reviews
+    // const result=allbooks
+     //result.reviewsData=reviews
+    res.status(200).send({ status: true, message: "success", data: allbooks });
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });
   }
@@ -133,8 +137,9 @@ const updatebook = async function (req, res) {
     //======uniquecase=====///
 
     if (title) {
-      const dublicatetitle = await bookModel.findOne({ title: title });
-      if(! typeof title === "string" && typeof title==""){ return res.status(400).send({status: false,msg: " title is required", });}
+      
+      if(! typeof title === "string" && typeof title==""&& value.trim().length == 0){ return res.status(400).send({status: false,msg: " title is required", });}
+      const dublicatetitle = await bookModel.findOne({ title: title });//isko dobara check karna hai
       if (dublicatetitle) {
         return res
           .status(400)
@@ -177,7 +182,7 @@ const updatebook = async function (req, res) {
       .status(200)
       .send({ status: true, message: "success", data: updatedBook });
   } catch (error) {
-    res.status(500).send({ status: false, msg: err.message });
+    res.status(500).send({ status: false, msg: error.message });
   }
 };
 
