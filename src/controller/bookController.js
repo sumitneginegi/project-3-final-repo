@@ -1,6 +1,5 @@
 const bookModel = require("../models/bookModel");
 const valid = require("../validator/validator");
-const userModel = require("../models/UserModel");
 const reviewModel = require("../models/reviewModel");
 const mongoose = require("mongoose");
 
@@ -58,10 +57,8 @@ const getBook = async function (req, res) {
     const { userId, category, subcategory } = data;
 
     if (userId) {
-      if (!mongoose.Types.ObjectId.isValid(data.userId)) { return res.status(400).send({ status: false, msg: "User id is not valid" });}
-
-      // const findUser = await userModel.findById( userId )
-      // if (!findUser) return res.status(404).send({ status: false, message: "This User Not exist" })
+      if (!mongoose.Types.ObjectId.isValid(data.userId))
+       { return res.status(400).send({ status: false, msg: "User id is not valid" });}
     }
     const returnBook = await bookModel.find({ $and: [data, { isDeleted: false }] })
       .select("title excerpt userId category releasedAt reviews")
@@ -71,7 +68,7 @@ const getBook = async function (req, res) {
           status: true,
           count: returnBook.length,
           message: "Book list",
-          data: returnBook,
+          data:returnBook,
         });
     } else {
       res.status(404).send({ status: false, message: "No Book Found" });
@@ -97,19 +94,17 @@ const getById = async (req, res) => {
     let allbooks = await bookModel.findById(data);
     if (!allbooks) { return res.status(404).send({ status: false, msg: "book not found" });}
     if ( allbooks.isDeleted === true) { return res.status(404).send({ status: false, msg: "book is Deleted" }); }
-
+ //console.log({...allbooks})
     let reviews = await reviewModel
       .find({ bookId: data })
-      .select("reviewedBy reviewedAt rating review");
-    //const result = allbooks._doc;
-   // result.reviewsData = reviews;
-      allbooks._doc.reviewsData = reviews
-    // const result=allbooks
-     //result.reviewsData=reviews
-    res.status(200).send({ status: true, message: "success", data: allbooks });
+      .select("reviewedBy reviewedAt rating review");//.lean();
+    const result = allbooks._doc;
+    result.reviewsData = reviews;
+    res.status(200).send({ status: true, message: "success", data:allbooks });
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });
   }
+
 };
 
 //============================================updateBook==============================================//
@@ -136,36 +131,32 @@ const updatebook = async function (req, res) {
     
     //======uniquecase=====///
 
-    if (title) {
-      
-      if(! typeof title === "string" && typeof title==""&& value.trim().length == 0){ return res.status(400).send({status: false,msg: " title is required", });}
-      const dublicatetitle = await bookModel.findOne({ title: title });//isko dobara check karna hai
-      if (dublicatetitle) {
-        return res
-          .status(400)
-          .send({ status: false, msg: " title is required/already in use" });
+    if (title || title==="") {
+      const dublicatetitle = await bookModel.findOne({ title: title });
+      if (!valid.isValid(title)||dublicatetitle) {
+        return res .status(400).send({ status: false, msg: " title is required or already in use" });
       }
     }
-    if (ISBN) {
+    if (ISBN|| ISBN==="") {
       const dublicateISBN = await bookModel.findOne({ ISBN: ISBN });
       if (!valid.isValidA(ISBN) || dublicateISBN) {
         return res
           .status(400)
           .send({
             status: false,
-            msg: " ISBN is required and ISBN already in used",
+            msg: " ISBN is required or ISBN already in used",
           });
       }
     }
-    if (excerpt) {
-      if (!valid.isValid(excerpt)) { ////Isko Dubaara Dekhna h
+    if (excerpt||excerpt==="") {
+      if (!valid.isValid(excerpt)) { 
         return res
           .status(400)
           .send({ status: false, msg: " excerpt is required" });
       }
     }
 
-    if (releasedAt) {
+    if (releasedAt||releasedAt==="") {
       if (!valid.isValidDate(releasedAt)) {
         return res
           .status(400)
@@ -174,13 +165,9 @@ const updatebook = async function (req, res) {
     }
 
     let updatedBook = await bookModel.findOneAndUpdate(
-      { _id: bookId },
-      { title, excerpt, releasedAt, ISBN },
-      { new: true }
+      { _id: bookId },{ title, excerpt, releasedAt, ISBN },{ new: true }
     );
-    return res
-      .status(200)
-      .send({ status: true, message: "success", data: updatedBook });
+    return res.status(200).send({ status: true, message: "success", data: updatedBook });
   } catch (error) {
     res.status(500).send({ status: false, msg: error.message });
   }
