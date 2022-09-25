@@ -33,7 +33,7 @@ const createReview = async function (req, res) {
 
     } else {
       if (!valid.isValidName(reviewedBy)) {
-        return res.status(404).send({ status: false, message: "provide name" });
+        return res.status(404).send({ status: false, message: "Name's first character must be capital...!" });
       }
     }
 
