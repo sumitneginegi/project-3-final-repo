@@ -100,7 +100,7 @@ const getById = async (req, res) => {
       .select("reviewedBy reviewedAt rating review");//.lean();
     const result = allbooks._doc;
     result.reviewsData = reviews;
-    res.status(200).send({ status: true, message: "success", data:allbooks });
+    res.status(200).send({ status: true, message: "success", data:allbooks});
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });
   }
@@ -142,7 +142,7 @@ const updatebook = async function (req, res) {
       }
     }
     if (ISBN|| ISBN==="") {
-      if (valid.isValid(title)) {
+      if (valid.isValid(ISBN)) {
         const dublicateISBN = await bookModel.findOne({ ISBN: ISBN })
         if(dublicateISBN)
        { return res .status(400).send({ status: false, msg: " this ISBN is already in use" });}
